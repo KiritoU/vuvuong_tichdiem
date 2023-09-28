@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     # Devil
     "accounts",
+    "coin",
 ]
 
 MIDDLEWARE = [
@@ -208,3 +209,6 @@ if not DEBUG:
     }
 
 COIN_PEER_INVITATION = env.int("COIN_PEER_INVITATION")
+QUIZ_URL = env("QUIZ_URL")
+COIN_PEER_TRUE_QUIZ = env.int("COIN_PEER_TRUE_QUIZ")
+COIN_PEER_FALSE_QUIZ = env.int("COIN_PEER_FALSE_QUIZ")

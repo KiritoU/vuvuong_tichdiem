@@ -2,15 +2,17 @@ class Constants:
     # Success
     SIGNUP_SUCCESS = "Đăng ký thành công"
     LOGIN_SUCCESS = "Đăng nhập thành công"
-    USER_INFO = "Thông tin người dùng"
-    USER_CHECKIN = "Thông tin điểm danh của người dùng"
+    ANSWER_SUCCESS = "Gửi câu trả lời thành công"
+    USER_INFO = "Thông tin của bạn"
+    USER_CHECKIN = "Thông tin điểm danh của bạn"
     USER_CHECKIN_SUCCESS = "Điểm danh thành công"
+    USER_DAILY_QUESTIONS = "Danh sách câu hỏi hàng ngày của bạn"
 
     # Failure
     LOGIN_FAILED = (
         "Tên đăng nhập, mật khẩu hoặc thiết bị đăng nhập không đúng. Vui lòng thử lại!"
     )
-    USER_INFO_FAILED = "Lấy thông tin người dùng thất bại"
+    USER_INFO_FAILED = "Lấy thông tin của bạn thất bại"
     USERNAME_EXIST = "Tên đăng nhập đã tồn tại"
     EMAIL_EXIST = "Email đã tồn tại"
     DEVICE_EXIST = "Thiết bị đã được sử dụng để đăng ký"

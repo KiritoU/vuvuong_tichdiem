@@ -1,3 +1,5 @@
+import pytz
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.shortcuts import render
 from django.utils import timezone
@@ -99,7 +101,7 @@ class LoginView(APIView):
         else:
             return Response(
                 utils.get_response_data(
-                    data=tokens, success=1, message=constants.LOGIN_FAILED
+                    data=[], success=0, message=constants.LOGIN_FAILED
                 ),
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -135,7 +137,7 @@ class UserCheckinAPIView(BaseAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        now = timezone.now()
+        now = utils.get_now_datetime()
         user_checkins = request.user.checkins.filter(date__month=now.month)
         data = [checkin.__str__() for checkin in user_checkins]
 
@@ -149,13 +151,16 @@ class UserCheckinAPIView(BaseAPIView):
         )
 
     def post(self, request, *args, **kwargs):
-        now = timezone.now()
+        now = utils.get_now_datetime()
         today_checkin, _ = Checkin.objects.get_or_create(date=now.date())
         is_user_checked_in = today_checkin.users.filter(
             username=request.user.username
         ).exists()
 
-        data = [checkin.__str__() for checkin in request.user.checkins.all()]
+        data = [
+            checkin.__str__()
+            for checkin in request.user.checkins.filter(date__month=now.month)
+        ]
 
         if is_user_checked_in:
             return Response(
@@ -168,6 +173,10 @@ class UserCheckinAPIView(BaseAPIView):
             )
 
         today_checkin.users.add(request.user)
+        data = [
+            checkin.__str__()
+            for checkin in request.user.checkins.filter(date__month=now.month)
+        ]
 
         return Response(
             utils.get_response_data(
