@@ -51,10 +51,10 @@ class QuizAPIView(BaseAPIView):
 
         earned_coin = 0
         for question_index, answer in answers.items():
+            answer = str(answer)
             if not answer:
                 continue
 
-            answer = str(answer)
             question = questions.get(question_index, {})
             if question and not question.get("answer", ""):
                 question["answer"] = answer
