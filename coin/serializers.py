@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Quiz
+from .models import Code, Quiz, RotationLuckReward
 
 
 class QuizSerializer(serializers.ModelSerializer):
@@ -20,3 +20,15 @@ class QuizSerializer(serializers.ModelSerializer):
             res[k] = v
 
         return res
+
+
+class CodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Code
+        fields = ["code", "name", "coin_price"]
+
+
+class RotationLuckRewardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RotationLuckReward
+        fields = ["code_with_coin_price", "coin", "rate"]

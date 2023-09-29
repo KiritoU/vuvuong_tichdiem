@@ -33,7 +33,7 @@ class Utils:
         questions = {}
 
         try:
-            response = requests.get(settings.QUIZ_URL)
+            response = requests.get(settings.QUIZ_URL, timeout=20)
             results = response.json().get("results", [])
 
             for i, result in enumerate(results):
