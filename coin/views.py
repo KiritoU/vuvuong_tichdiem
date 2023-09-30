@@ -7,11 +7,12 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.serializers import UserInfoSerializer
 from accounts.views import BaseAPIView
 from constants import constants
 from utils import utils
 
-from .models import Code, Quiz, RotationLuckReward
+from .models import Code, MonthlyCheckinReward, Quiz, RotationLuckReward
 from .serializers import CodeSerializer, QuizSerializer, RotationLuckRewardSerializer
 
 
@@ -79,6 +80,7 @@ class QuizAPIView(BaseAPIView):
             utils.get_response_data(
                 data={
                     "earned_coin": earned_coin,
+                    "user": UserInfoSerializer(user).data,
                     **QuizSerializer(quiz).data,
                 },
                 success=1,
@@ -214,3 +216,86 @@ class UserRotateLuckAPIView(BaseAPIView):
                 return Response(response, status=status.HTTP_200_OK)
 
             start += reward.rate
+
+
+class UserMonthlyCheckinRewardAPIView(BaseAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        requested_day_count = int(request.data.get("day_count", 0))
+
+        now = utils.get_now_datetime()
+
+        try:
+            reward = MonthlyCheckinReward.objects.get(
+                month=now.month, year=now.year, day_count=requested_day_count
+            )
+        except:
+            if requested_day_count in constants.DEFAULT_MONTHLY_CHECKIN_REWARD.keys():
+                reward = MonthlyCheckinReward.objects.create(
+                    month=now.month,
+                    year=now.year,
+                    day_count=requested_day_count,
+                    coin=constants.DEFAULT_MONTHLY_CHECKIN_REWARD[requested_day_count],
+                )
+            else:
+                reward = None
+
+        if not reward:
+            return Response(
+                utils.get_response_data(
+                    data={},
+                    success=0,
+                    message=constants.MONTHLY_CHECKIN_REWARD_NOT_FOUND.format(
+                        requested_day_count
+                    ),
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        checked_in_count = request.user.checkins.filter(date__month=now.month).count()
+        if checked_in_count < requested_day_count:
+            return Response(
+                utils.get_response_data(
+                    data={},
+                    success=0,
+                    message=constants.NOT_ENOUGH_CHECKED_IN_COUNT.format(
+                        requested_day_count
+                    ),
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_rewarded_before = reward.users.filter(
+            username=request.user.username
+        ).exists()
+        if is_rewarded_before:
+            return Response(
+                utils.get_response_data(
+                    data={},
+                    success=0,
+                    message=constants.RECEIVED_MONTHLY_CHECKIN_REWARD.format(
+                        requested_day_count
+                    ),
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        reward.users.add(request.user)
+        request.user.coin += reward.coin
+        request.user.save()
+        # TODO: History
+
+        return Response(
+            utils.get_response_data(
+                data={
+                    "earned_coin": reward.coin,
+                    "user": UserInfoSerializer(request.user).data,
+                },
+                success=1,
+                message=constants.USER_RECEIVE_MONTHLY_CHECKIN_REWARD_SUCCESS.format(
+                    requested_day_count
+                ),
+            ),
+            status=status.HTTP_200_OK,
+        )

@@ -43,3 +43,18 @@ class RotationLuckReward(models.Model):
 
     class Meta:
         ordering = ("rate",)
+
+
+class MonthlyCheckinReward(models.Model):
+    month = models.PositiveIntegerField()
+    year = models.PositiveIntegerField()
+
+    day_count = models.PositiveIntegerField()
+    coin = models.PositiveIntegerField(default=0)
+
+    users = models.ManyToManyField(User, related_name="monthlycheckinrewards")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.day_count} of {self.month}/${self.year} => {self.coin} coin(s)"
