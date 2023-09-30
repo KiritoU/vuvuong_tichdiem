@@ -3,10 +3,11 @@ import random
 from django.conf import settings
 from django.shortcuts import render
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.models import History
 from accounts.serializers import UserInfoSerializer
 from accounts.views import BaseAPIView
 from constants import constants
@@ -74,15 +75,23 @@ class QuizAPIView(BaseAPIView):
 
         user.coin += earned_coin
         user.save()
-        # TODO: Noti / history
+        if earned_coin > 0:
+            History.objects.create(
+                user=user,
+                type="COIN",
+                coin=earned_coin,
+                content=constants.HISTORY_RECEIVE_QUIZ_REWARD,
+            )
+
+        response_data = {
+            "earned_coin": earned_coin,
+            **QuizSerializer(quiz).data,
+        }
+        response_data["user"] = UserInfoSerializer(user).data
 
         return Response(
             utils.get_response_data(
-                data={
-                    "earned_coin": earned_coin,
-                    "user": UserInfoSerializer(user).data,
-                    **QuizSerializer(quiz).data,
-                },
+                data=response_data,
                 success=1,
                 message=constants.ANSWER_SUCCESS,
             ),
@@ -119,7 +128,17 @@ class UserCodeWithCoinAPIView(BaseAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        codes = Code.objects.filter(user__isnull=True)
+        if user.coin < coin_price:
+            return Response(
+                utils.get_response_data(
+                    data=[],
+                    success=0,
+                    message=constants.NOT_ENOUGH_COIN,
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        codes = Code.objects.filter(user__isnull=True, coin_price=coin_price)
         if not codes.exists():
             return Response(
                 utils.get_response_data(
@@ -135,7 +154,16 @@ class UserCodeWithCoinAPIView(BaseAPIView):
         code = codes.last()
         code.user = user
         code.save()
-        # TODO: Noti / history
+
+        user.coin -= coin_price
+        user.save()
+
+        History.objects.create(
+            user=user,
+            type="CODE",
+            coin=-coin_price,
+            content=constants.HISTORY_EXCHANGE_CODE.format(code.code, coin_price),
+        )
 
         return Response(
             utils.get_response_data(
@@ -188,6 +216,18 @@ class UserRotateLuckAPIView(BaseAPIView):
         start = 0
         for reward in rewards:
             if start < picked_number <= start + reward.rate:
+                user.coin -= settings.ROTATE_COIN_PRICE
+                user.save()
+                if settings.ROTATE_COIN_PRICE > 0:
+                    History.objects.create(
+                        user=user,
+                        type="COIN",
+                        coin=-settings.ROTATE_COIN_PRICE,
+                        content=constants.HISTORY_RORATE_LUCK_WHEEL.format(
+                            settings.ROTATE_COIN_PRICE
+                        ),
+                    )
+
                 is_reward_code_still_exist = True
                 if reward.code_with_coin_price > 0:
                     code = Code.objects.get(
@@ -195,11 +235,29 @@ class UserRotateLuckAPIView(BaseAPIView):
                     )
                     code.user = user
                     code.save()
+                    History.objects.create(
+                        user=user,
+                        type="CODE",
+                        coin=0,
+                        content=constants.HISTORY_RECEIVE_CODE_FROM_ROTATION_LUCK.format(
+                            code.code
+                        ),
+                    )
+
                     is_reward_code_still_exist = Code.objects.filter(
                         user__isnull=True, coin_price=reward.code_with_coin_price
                     ).exists()
 
                 user.coin += reward.coin
+                if reward.coin > 0:
+                    History.objects.create(
+                        user=user,
+                        type="COIN",
+                        coin=reward.coin,
+                        content=constants.HISTORY_RECEIVE_COIN_FROM_ROTATION_LUCK.format(
+                            reward.coin
+                        ),
+                    )
 
                 response = utils.get_response_data(
                     data=RotationLuckRewardSerializer(reward).data,
@@ -209,9 +267,6 @@ class UserRotateLuckAPIView(BaseAPIView):
 
                 if not is_reward_code_still_exist:
                     reward.delete()
-
-                user.coin -= settings.ROTATE_COIN_PRICE
-                user.save()
 
                 return Response(response, status=status.HTTP_200_OK)
 
@@ -284,7 +339,15 @@ class UserMonthlyCheckinRewardAPIView(BaseAPIView):
         reward.users.add(request.user)
         request.user.coin += reward.coin
         request.user.save()
-        # TODO: History
+
+        History.objects.create(
+            user=request.user,
+            type="COIN",
+            coin=reward.coin,
+            content=constants.HISTORY_MONTHLY_CHECKIN_REWARD.format(
+                requested_day_count
+            ),
+        )
 
         return Response(
             utils.get_response_data(

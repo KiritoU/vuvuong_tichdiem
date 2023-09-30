@@ -6,7 +6,7 @@ from rest_framework.validators import ValidationError
 from constants import constants
 from utils import utils
 
-from .models import User
+from .models import History, User
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -77,3 +77,9 @@ class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "email", "invitation_code", "coin", "is_validated_email"]
+
+
+class HistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = History
+        fields = ["type", "coin", "content", "created_at"]

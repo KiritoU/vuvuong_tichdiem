@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import (
 from . import views
 
 urlpatterns = [
+    path("history/", views.UserHistoryListAPIView.as_view(), name="history"),
     path("signup/", views.SignUpView.as_view(), name="signup"),
     path("login/", views.LoginView.as_view(), name="login"),
     path("info/", views.UserInfoView.as_view(), name="user_infor"),

@@ -17,8 +17,8 @@ from rest_framework.views import APIView
 from constants import constants
 from utils import utils
 
-from .models import Checkin, User
-from .serializers import SignUpSerializer, UserInfoSerializer
+from .models import Checkin, History, User
+from .serializers import HistorySerializer, SignUpSerializer, UserInfoSerializer
 from .tokens import create_jwt_pair_for_user
 
 # Create your views here.
@@ -186,3 +186,17 @@ class UserCheckinAPIView(BaseAPIView):
             ),
             status=status.HTTP_200_OK,
         )
+
+
+class UserHistoryListAPIView(BaseAPIView, generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = HistorySerializer
+
+    def get_queryset(self):
+        queryset = History.objects.filter(user=self.request.user)
+
+        history_type = self.request.query_params.get("type", "")
+        if history_type:
+            queryset = queryset.filter(type=history_type)
+
+        return queryset

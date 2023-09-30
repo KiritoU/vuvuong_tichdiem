@@ -5,6 +5,12 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from constants import constants
+
+
+def get_empty_string():
+    return ""
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, password, **extra_fields):
@@ -55,7 +61,11 @@ class User(AbstractUser):
 
     def receive_invitation_reward(self):
         self.coin += settings.COIN_PEER_INVITATION
-        # TODO: Noti + history
+        self.histories.create(
+            type="COIN",
+            coin=settings.COIN_PEER_INVITATION,
+            content=constants.HISTORY_RECEIVE_INVITATION_REWARD,
+        )
         self.save()
 
 
@@ -68,3 +78,22 @@ class Checkin(models.Model):
 
     class Meta:
         ordering = ("-date",)
+
+
+class History(models.Model):
+    TYPE_CHOICES = (
+        ("COIN", "COIN"),
+        ("CODE", "CODE"),
+    )
+
+    user = models.ForeignKey(User, related_name="histories", on_delete=models.CASCADE)
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES, default="COIN")
+    coin = models.IntegerField(default=0)
+    content = models.CharField(
+        max_length=255, blank=True, null=True, default=get_empty_string
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)

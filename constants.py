@@ -11,6 +11,7 @@ class Constants:
     }
 
     # Success
+    SUCCESS = "Thành công"
     SIGNUP_SUCCESS = "Đăng ký thành công"
     LOGIN_SUCCESS = "Đăng nhập thành công"
     ANSWER_SUCCESS = "Gửi câu trả lời thành công"
@@ -41,6 +42,15 @@ class Constants:
     MONTHLY_CHECKIN_REWARD_NOT_FOUND = "Không có phần thưởng điểm danh cho mốc {} ngày"
     NOT_ENOUGH_CHECKED_IN_COUNT = "Bạn chưa đạt đủ mốc checkin {} ngày"
     RECEIVED_MONTHLY_CHECKIN_REWARD = "Bạn đã nhận thưởng cho mốc {} ngày"
+
+    # History
+    HISTORY_RECEIVE_INVITATION_REWARD = "Nhận quà giới thiệu"
+    HISTORY_RECEIVE_QUIZ_REWARD = "Nhận coin trả lời Quiz"
+    HISTORY_EXCHANGE_CODE = "Đổi code {} trị giá {} coin"
+    HISTORY_RECEIVE_CODE_FROM_ROTATION_LUCK = "Nhận code {} từ vòng quay may mắn"
+    HISTORY_MONTHLY_CHECKIN_REWARD = "Nhận quà điểm danh mốc {} ngày"
+    HISTORY_RORATE_LUCK_WHEEL = "Tham gia vòng quay may mắn với {} coin"
+    HISTORY_RECEIVE_COIN_FROM_ROTATION_LUCK = "Nhận {} coin từ vòng quay may mắn"
 
 
 constants = Constants()
