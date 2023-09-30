@@ -86,7 +86,9 @@ class History(models.Model):
         ("CODE", "CODE"),
     )
 
-    user = models.ForeignKey(User, related_name="histories", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name="histories", on_delete=models.CASCADE, db_index=True
+    )
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default="COIN")
     coin = models.IntegerField(default=0)
     content = models.CharField(
