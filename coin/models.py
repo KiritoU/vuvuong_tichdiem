@@ -52,9 +52,11 @@ class MonthlyCheckinReward(models.Model):
     day_count = models.PositiveIntegerField()
     coin = models.PositiveIntegerField(default=0)
 
-    users = models.ManyToManyField(User, related_name="monthlycheckinrewards")
+    users = models.ManyToManyField(
+        User, related_name="monthlycheckinrewards", blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.day_count} of {self.month}/${self.year} => {self.coin} coin(s)"
+        return f"{self.day_count} of {self.month}/{self.year} => {self.coin} coin(s)"
