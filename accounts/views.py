@@ -1,4 +1,3 @@
-import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.shortcuts import render
@@ -141,9 +140,11 @@ class UserCheckinAPIView(BaseAPIView):
         user_checkins = request.user.checkins.filter(date__month=now.month)
         data = [checkin.__str__() for checkin in user_checkins]
 
+        days = utils.get_days_response(checked_in_data=data)
+
         return Response(
             utils.get_response_data(
-                data=data,
+                data=days,
                 success=1,
                 message=constants.USER_CHECKIN,
             ),
@@ -162,10 +163,12 @@ class UserCheckinAPIView(BaseAPIView):
             for checkin in request.user.checkins.filter(date__month=now.month)
         ]
 
+        days = utils.get_days_response(checked_in_data=data)
+
         if is_user_checked_in:
             return Response(
                 utils.get_response_data(
-                    data=data,
+                    data=days,
                     success=0,
                     message=constants.USER_ALREADY_CHECKED_IN,
                 ),
@@ -177,10 +180,11 @@ class UserCheckinAPIView(BaseAPIView):
             checkin.__str__()
             for checkin in request.user.checkins.filter(date__month=now.month)
         ]
+        days = utils.get_days_response(checked_in_data=data)
 
         return Response(
             utils.get_response_data(
-                data=data,
+                data=days,
                 success=1,
                 message=constants.USER_CHECKIN_SUCCESS,
             ),

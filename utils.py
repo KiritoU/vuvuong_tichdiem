@@ -1,5 +1,7 @@
+import calendar
 import random
 import string
+from datetime import datetime
 
 import pytz
 import requests
@@ -47,6 +49,20 @@ class Utils:
             print(e)
 
         return questions
+
+    def get_days_response(self, checked_in_data: list) -> dict:
+        now = self.get_now_datetime()
+
+        days_in_month = calendar.monthrange(now.year, now.month)[1]
+        days = {
+            f"{day}-{now.month}-{now.year}": False
+            for day in range(1, days_in_month + 1)
+        }
+
+        for day in checked_in_data:
+            days[day.strip("0")] = True
+
+        return days
 
 
 utils = Utils()
