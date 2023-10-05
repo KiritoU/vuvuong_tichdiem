@@ -168,13 +168,18 @@ class UserCheckinAPIView(BaseAPIView):
         if is_user_checked_in:
             return Response(
                 utils.get_response_data(
-                    data=days,
+                    data={
+                        "earned_coin": 0,
+                        "days": days,
+                    },
                     success=0,
                     message=constants.USER_ALREADY_CHECKED_IN,
                 ),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        request.user.coin += settings.COIN_PEER_DAILY_CHECKIN
+        request.user.save()
         today_checkin.users.add(request.user)
         data = [
             checkin.__str__()
@@ -184,7 +189,10 @@ class UserCheckinAPIView(BaseAPIView):
 
         return Response(
             utils.get_response_data(
-                data=days,
+                data={
+                    "earned_coin": settings.COIN_PEER_DAILY_CHECKIN,
+                    "days": days,
+                },
                 success=1,
                 message=constants.USER_CHECKIN_SUCCESS,
             ),
