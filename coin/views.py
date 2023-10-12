@@ -230,9 +230,9 @@ class UserRotateLuckAPIView(BaseAPIView):
 
                 is_reward_code_still_exist = True
                 if reward.code_with_coin_price > 0:
-                    code = Code.objects.get(
+                    code = Code.objects.filter(
                         user__isnull=True, coin_price=reward.code_with_coin_price
-                    )
+                    ).first()
                     code.user = user
                     code.save()
                     History.objects.create(

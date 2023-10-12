@@ -5,3 +5,4 @@ venv
 
 .env
 *sqlite*
+test_*
