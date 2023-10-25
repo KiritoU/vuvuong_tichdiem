@@ -26,6 +26,7 @@ class Constants:
     USER_RECEIVE_MONTHLY_CHECKIN_REWARD_SUCCESS = "Nhận thưởng mốc {} ngày thành công"
 
     # Failure
+    DATA_ERROR = "Dữ liệu không đúng, vui lòng thử lại"
     LOGIN_FAILED = (
         "Tên đăng nhập, mật khẩu hoặc thiết bị đăng nhập không đúng. Vui lòng thử lại!"
     )

@@ -6,3 +6,4 @@ venv
 .env
 *sqlite*
 test_*
+certificates

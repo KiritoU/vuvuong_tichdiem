@@ -1,15 +1,41 @@
 import calendar
+import json
 import random
 import string
 from datetime import datetime
 
 import pytz
 import requests
+import rsa
 from django.conf import settings
 from django.utils import timezone
+from icecream import ic
 
 
 class Utils:
+    def __init__(self):
+        with open(settings.PRIVATE_KEY_PATH, "rb") as f:
+            private_key_pem = f.read()
+        self.private_key = rsa.PrivateKey.load_pkcs1(private_key_pem)
+
+    def decrypt_request(self, request_data):
+        try:
+            encrypted_data = (request_data).get("d", "")
+            decrypted_data = rsa.decrypt(
+                bytes.fromhex(encrypted_data), self.private_key
+            )
+            decrypted_data = decrypted_data.decode()
+            decrypted_data = decrypted_data.replace("'", '"')
+            request_data = json.loads(decrypted_data)
+            if "time" not in request_data:
+                request_data = {}
+            ic(request_data)
+        except Exception as e:
+            ic(e)
+            request_data = {}
+
+        return request_data
+
     def get_response_data(self, data, success: int, message: str) -> dict:
         return {
             "success": success,

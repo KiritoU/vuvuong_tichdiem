@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.shortcuts import render
 from django.utils import timezone
+from icecream import ic
 from rest_framework import generics, status
 from rest_framework.exceptions import (
     AuthenticationFailed,
@@ -51,7 +52,14 @@ class SignUpView(generics.GenericAPIView):
     permission_classes = []
 
     def post(self, request: Request):
-        data = request.data
+        data = utils.decrypt_request(request.data)
+        if not data:
+            return Response(
+                utils.get_response_data(
+                    data=[], success=0, message=constants.DATA_ERROR
+                ),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         serializer = self.serializer_class(data=data)
 
@@ -76,13 +84,17 @@ class SignUpView(generics.GenericAPIView):
         )
 
 
-class LoginView(APIView):
+class LoginView(BaseAPIView):
     permission_classes = []
 
-    def post(self, request: Request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        device_id = request.data.get("device_id")
+    def post(self, request):
+        request_data = utils.decrypt_request(request.data)
+
+        username = request_data.get("username")
+        password = request_data.get("password")
+        device_id = request_data.get("device_id")
+
+        ic(request_data)
 
         user = authenticate(username=username, password=password)
         if user and user.device_id == device_id:
