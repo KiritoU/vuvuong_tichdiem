@@ -37,11 +37,14 @@ class Utils:
         return request_data
 
     def get_response_data(self, data, success: int, message: str) -> dict:
-        return {
+        response = {
             "success": success,
             "message": message,
-            "data": data,
         }
+        if data:
+            response["data"] = data
+
+        return response
 
     def generate_invation_code(self, code_length: int = 6) -> str:
         letters_and_digits = string.ascii_letters + string.digits
