@@ -1,3 +1,4 @@
+import base64
 import calendar
 import json
 import random
@@ -21,8 +22,11 @@ class Utils:
     def decrypt_request(self, request_data):
         try:
             encrypted_data = (request_data).get("d", "")
+            # decrypted_data = rsa.decrypt(
+            #     bytes.fromhex(encrypted_data), self.private_key
+            # )
             decrypted_data = rsa.decrypt(
-                bytes.fromhex(encrypted_data), self.private_key
+                base64.b64decode(encrypted_data), self.private_key
             )
             decrypted_data = decrypted_data.decode()
             decrypted_data = decrypted_data.replace("'", '"')
