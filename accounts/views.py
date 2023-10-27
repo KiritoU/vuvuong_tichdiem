@@ -94,8 +94,6 @@ class LoginView(BaseAPIView):
         password = request_data.get("password")
         device_id = request_data.get("device_id")
 
-        ic(request_data)
-
         user = authenticate(username=username, password=password)
         if user and user.device_id == device_id:
             tokens = create_jwt_pair_for_user(user)
